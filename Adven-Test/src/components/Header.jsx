@@ -15,5 +15,6 @@ const Header = ({ onNavigateHome, onNavigateLeaderboard }) => {
     </header>
   );
 };
-  
+         
+
 export default Header;
