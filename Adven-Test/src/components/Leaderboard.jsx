@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
+// Updated categories to match Home component
 const categoryNames = {
-  11: 'Movies',
-  12: 'Music',
-  14: 'Television',
-  15: 'Video Games',
-  31: 'Anime & Manga',
-  32: 'Cartoons',
+  9: 'General Knowledge',
+  22: 'Geography',
+  23: 'History',
+  25: 'Art',
+  27: 'Animals',
 };
 
 const Leaderboard = ({ onBack }) => {
