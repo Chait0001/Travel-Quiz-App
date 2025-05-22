@@ -23,3 +23,5 @@ const Results = ({ score, total, onRestart }) => {
 };
 
 export default Results;
+
+   
