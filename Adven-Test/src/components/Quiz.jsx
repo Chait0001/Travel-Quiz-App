@@ -8,6 +8,8 @@ const Quiz = ({ category, onFinish, source = 'opentdb' }) => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
   const [currentOptions, setCurrentOptions] = useState([]);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [isAnswered, setIsAnswered] = useState(false);
 
   const decodeHtml = (html) => {
     const txt = document.createElement('textarea');
@@ -40,6 +42,8 @@ const Quiz = ({ category, onFinish, source = 'opentdb' }) => {
         .sort(() => Math.random() - 0.5)
         .map(decodeHtml);
       setCurrentOptions(options);
+      setSelectedAnswer(null);
+      setIsAnswered(false);
     }
   }, [questions, currentQuestion]);
 
@@ -94,16 +98,24 @@ const Quiz = ({ category, onFinish, source = 'opentdb' }) => {
   };
 
   const handleAnswer = (selected) => {
+    if (isAnswered) return;
+    
+    setSelectedAnswer(selected);
+    setIsAnswered(true);
+    
     if (selected === questions[currentQuestion].correctAnswer) {
       setScore((prev) => prev + 1);
     }
 
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setTimeLeft(30);
-    } else {
-      handleFinish();
-    }
+    // Wait a moment to show the result, then move to next question
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion((prev) => prev + 1);
+        setTimeLeft(30);
+      } else {
+        handleFinish();
+      }
+    }, 1500);
   };
 
   const handleFinish = () => {
@@ -119,24 +131,100 @@ const Quiz = ({ category, onFinish, source = 'opentdb' }) => {
     onFinish(score, questions.length);
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  const getProgressPercentage = () => {
+    return ((currentQuestion + 1) / questions.length) * 100;
+  };
+
+  const getTimeColor = () => {
+    if (timeLeft <= 10) return '#ef4444';
+    if (timeLeft <= 20) return '#f59e0b';
+    return '#10b981';
+  };
+
+  if (isLoading) {
+    return (
+      <div className="quiz-container">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <h3>Loading your quiz...</h3>
+          <p>Preparing amazing questions for you! 🚀</p>
+        </div>
+      </div>
+    );
+  }
+  
   if (!questions.length) return null;
 
   const q = questions[currentQuestion];
+  const isCorrect = selectedAnswer === q.correctAnswer;
 
   return (
     <div className="quiz-container">
-      <div className="timer">Time Left: {timeLeft}s</div>
-      <div className="score">Score: {score}/{questions.length}</div>
-      <h2>Question {currentQuestion + 1}</h2>
-      <p>{q.question}</p>
-      <div className="options">
-        {currentOptions.map((opt, i) => (
-          <button key={i} onClick={() => handleAnswer(opt)} className="option-btn">
-            {opt}
-          </button>
-        ))}
+      <div className="quiz-header">
+        <div className="progress-bar">
+          <div 
+            className="progress-fill" 
+            style={{ width: `${getProgressPercentage()}%` }}
+          ></div>
+        </div>
+        <div className="quiz-stats">
+          <div className="timer" style={{ color: getTimeColor() }}>
+            ⏱️ {timeLeft}s
+          </div>
+          <div className="score">
+            🎯 {score}/{questions.length}
+          </div>
+        </div>
       </div>
+
+      <div className="question-section">
+        <h2>Question {currentQuestion + 1} of {questions.length}</h2>
+        <div className="question">
+          {q.question}
+        </div>
+      </div>
+
+      <div className="options">
+        {currentOptions.map((opt, i) => {
+          let optionClass = 'option-btn';
+          if (isAnswered) {
+            if (opt === q.correctAnswer) {
+              optionClass += ' correct';
+            } else if (opt === selectedAnswer && opt !== q.correctAnswer) {
+              optionClass += ' incorrect';
+            }
+          }
+          
+          return (
+            <button 
+              key={i} 
+              onClick={() => handleAnswer(opt)} 
+              className={optionClass}
+              disabled={isAnswered}
+            >
+              <span>{opt}</span>
+              {isAnswered && opt === q.correctAnswer && <span className="checkmark">✅</span>}
+              {isAnswered && opt === selectedAnswer && opt !== q.correctAnswer && <span className="cross">❌</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {isAnswered && (
+        <div className={`feedback ${isCorrect ? 'correct-feedback' : 'incorrect-feedback'}`}>
+          {isCorrect ? (
+            <div>
+              <span className="feedback-emoji">🎉</span>
+              <span className="feedback-text">Correct! Well done!</span>
+            </div>
+          ) : (
+            <div>
+              <span className="feedback-emoji">💡</span>
+              <span className="feedback-text">The correct answer was: <strong>{q.correctAnswer}</strong></span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

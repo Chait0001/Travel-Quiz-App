@@ -4,8 +4,9 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-content">
-        <p> 2025 Fun Quiz App. All rights reserved.</p>
-        <p>Powered by Open Trivia Database</p>
+        <p>🚀 AdvenTest - Your Gateway to Knowledge</p>
+        <p>© 2025 All rights reserved | Made with ❤️ for curious minds</p>
+        <p>Powered by Open Trivia Database & The Trivia API</p>
       </div>
     </footer>
   );
